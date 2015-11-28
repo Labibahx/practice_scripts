@@ -59,6 +59,11 @@ ylabel('Normalized Num')
 
 legend()
 
+###########################
 
+"""Reading and writing files (tables).
+    script to read a data table, do some calculations using some of the columns and writing the results in a new table
+    """
+data= Table.read('')
 
 
