@@ -59,11 +59,43 @@ ylabel('Normalized Num')
 
 legend()
 
-###########################
 
-"""Reading and writing files (tables).
-    script to read a data table, do some calculations using some of the columns and writing the results in a new table
-    """
-data= Table.read('')
+"""
+read data file, do some calculations, and save results in a table.
+Example: perforem the KS test to compare NLS1 vs. BLS1 samples and save results in a table
+see ref here
+http://docs.scipy.org/doc/scipy-0.15.1/reference/generated/scipy.stats.ks_2samp.html
+"""
 
+
+from astropy.table import Table
+
+from scipy.stats import ks_2samp
+
+data= Table.read("NLS1")
+
+## test if the distributions of FeII (given with the R4570 ratio) for the NLS1 and BLS1 samples are similar
+
+ks1= ks_2samp(data['R4570'][data['lHbetaw'] >2000], data['R4570'][data['lHbetaw'] < 2000])
+
+# try to type ks1. ks1 has two numbers: the KS statistic and the p value
+
+# Now we want to repeat the test on other quantities (other than the R4570) to see if NLS1s and BLS1s are drawn from the same distribution or not. We can then save the results in a table
+
+cols= ['L5100', 'EW5007tot', 'EWHbetatot', 'L5007tot', 'Lhbetatot', 'R4570', 'R5007']
+
+out= open('ks_test.dat', 'wr') # open a file to write results -the 'wr' option is to allow us t oread and write
+out.write("param \t KS \t p-value \n") #wite a header
+
+for c in cols: # for through the columns and calculate the KS test for each parameter
+    ks= ks_2samp(data[c][data['lHbetaw'] >2000], data[c][data['lHbetaw'] < 2000])
+    out.write(c+"\t"+"{:4.5f}".format(ks[0])+"\t"+"{:4.5e}".format(ks[1])+"\n") #format the numbers
+
+out.close() #close the file. this is important because if you did not close the file it will stay open.
+
+### try to include an extra condition for the R4570 to do the calculations only when the ReII is detected. The data file has a column with a flag "FeII_DETECT" when it is set to 0 we detect FeII.
+
+################
+# next try to repeat the calculations using the Anderson-Darling test. This is the one I want to use in the paper to replace the KS test.
+#http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.anderson_ksamp.html
 
